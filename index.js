@@ -37,4 +37,5 @@ const last = require('lodash/last');
         await fs.ensureDir(dir);
         await fs.copy(file, path.join(output, file));
     }));
+    await fs.exists('assets') && await fs.copy('assets', path.resolve(output, 'assets'));
 })();
