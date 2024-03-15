@@ -8,8 +8,10 @@ const last = require('lodash/last');
 
 (async () => {
     const appDir = process.cwd();
+    const output = process.env.OUTPUT_PATH || 'build';
+    await fs.emptyDir(output);
     const files = await glob('**/*.md', {ignore: 'node_modules/**', cwd: appDir});
-    fs.writeJson(path.resolve(appDir, 'manifest.json'), files.map((item) => {
+    await fs.writeJson(path.resolve(appDir, output, 'manifest.json'), files.map((item) => {
         const md5 = crypto.createHash("md5");
         let filename = path.basename(item, path.extname(item)), author, index = 0;
         const match = filename.match(/\[.+?]/g);
@@ -30,4 +32,9 @@ const last = require('lodash/last');
             index
         }
     }).sort((a, b) => b.index - a.index));
+    await Promise.all(files.map(async (file) => {
+        const dir = path.join(output, path.dirname(file));
+        await fs.ensureDir(dir);
+        await fs.copy(file, path.join(output, file));
+    }));
 })();
